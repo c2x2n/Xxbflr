@@ -75,10 +75,10 @@
         let bird = {
             x: 100,
             y: canvas.height / 2,
-            radius: 15,
+            radius: 17,
             velocity: 0,
-            gravity: 0.5,
-            jumpStrength: -10,
+            gravity: 0.4,
+            jumpStrength: -7,
             color: '#ee1172'
         };
 
@@ -106,11 +106,11 @@
             pipes = [];
             score = 0;
 
-            generatePipe(-200);
-            generatePipe(0);
+            generatePipe(-100);
             generatePipe(200);
-            generatePipe(400);
-            generatePipe(600);
+            generatePipe(500);
+            generatePipe(800);
+            generatePipe(1100);
         }
 
         function drawBird() {
@@ -190,7 +190,6 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            
             drawPipes();
             drawBird();
         }
@@ -208,10 +207,9 @@
                 init();
                 return;
             }
+            gameRunning = true;
             if (gameRunning) {
                 bird.velocity = bird.jumpStrength;
-            } else {
-                gameRunning = true;
             }
         }
 
