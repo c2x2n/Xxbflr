@@ -77,8 +77,8 @@
             y: canvas.height / 2,
             radius: 17,
             velocity: 0,
-            gravity: 0.4,
-            jumpStrength: -7,
+            gravity: 0.5,
+            jumpStrength: -9,
             color: '#ee1172'
         };
 
@@ -87,7 +87,7 @@
         let gameRunning = false;
         let pipeWidth = 50;
         let pipeGap = 150;
-        let pipeSpeed = 3;
+        let pipeSpeed = 3.2;
         let pipeSpawnRate = 120;
         const time = 60;
         let failed = false;
@@ -102,15 +102,15 @@
         function init() {
             bird.y = canvas.height / 2;
             bird.velocity = 0;
-            pipeSpeed = 3;
+            pipeSpeed = 3.2;
             pipes = [];
             score = 0;
 
-            generatePipe(-100);
-            generatePipe(200);
-            generatePipe(500);
-            generatePipe(800);
-            generatePipe(1100);
+            generatePipe(-150);
+            generatePipe(150);
+            generatePipe(450);
+            generatePipe(750);
+            generatePipe(1050);
         }
 
         function drawBird() {
@@ -197,13 +197,12 @@
         function gameLoop() {
             update();
             draw();
-            requestAnimationFrame(gameLoop);
         }
 
         function jump() {
             if (!pipeSpeed) {
                 gameRunning = false;
-                pipeSpeed = 3;
+                pipeSpeed = 3.2;
                 init();
                 return;
             }
@@ -216,7 +215,7 @@
         canvas.addEventListener('click', jump);
 
         init();
-        gameLoop();
+        setInterval(gameLoop, 1000 / 60);
     </script>
 </body>
 </html>
