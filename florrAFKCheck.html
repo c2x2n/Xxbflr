@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Florr.io Afk Check</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1ea761;
+            font-family: Arial, sans-serif;
+        }
+        .game-container {
+            position: relative;
+        }
+        #canvas-box {
+            padding: 70px;
+            width: 500px;
+            height: 500px;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        #box {
+            position: absolute;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            top: 50%;
+            left: 50%;
+            width: 700px;
+            height: 200px;
+            background-color: #926546;
+            transform: translate(-50%, -50%);
+            padding: 15px;
+            color: white;
+            font-size: 60px;
+            border-radius: 6px;
+
+            &.show{
+                display: flex;
+            }
+        }
+        .score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div id="canvas-box">
+            <canvas id="gameCanvas" width="500" height="500"></canvas>
+        </div>
+        <div id="box">
+            YOU are AFK checked!
+        </div>
+        <div class="score">Remains <span id="timer">?</span> s</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const timerEle = document.getElementById('timer');
+
+        let bird = {
+            x: 100,
+            y: canvas.height / 2,
+            radius: 18,
+            velocity: 0,
+            gravity: 0.57,
+            jumpStrength: -9.5,
+            color: '#ee1172'
+        };
+
+        let pipes = [];
+        let score = 0;
+        let gameRunning = false;
+        let pipeWidth = 50;
+        let pipeGap = 150;
+        let pipeSpeed = 3.2;
+        let pipeSpawnRate = 120;
+        const time = 60;
+        let failed = false;
+
+        let timer = 0;
+
+        setInterval(() => { 
+            timer += 1;
+            timerEle.textContent = Math.max(0, time - timer);
+        }, 1000)
+
+        function init() {
+            bird.y = canvas.height / 2;
+            bird.velocity = 0;
+            pipeSpeed = 3.2;
+            pipes = [];
+            score = 0;
+
+            generatePipe(-150);
+            generatePipe(150);
+            generatePipe(450);
+            generatePipe(750);
+            generatePipe(1050);
+        }
+
+        function drawBird() {
+            ctx.beginPath();
+            ctx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+            ctx.fillStyle = bird.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPipes() {
+            pipes.forEach(pipe => {
+                ctx.fillStyle = '#2bfea6';
+                ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
+                
+                ctx.fillRect(pipe.x, pipe.topHeight + pipeGap, pipeWidth, canvas.height - pipe.topHeight - pipeGap);
+            });
+        }
+
+        function generatePipe(x) {
+            const minHeight = 50;
+            const maxHeight = canvas.height - pipeGap - minHeight;
+            const topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
+            
+            pipes.push({
+                x: canvas.width + x,
+                topHeight: topHeight,
+                passed: false
+            });
+        }
+
+        function update() {
+            if (failed) return;
+
+            if (timer >= time) {
+                document.getElementById("box").classList.add("show");
+                failed = true;
+            }
+
+            if (!gameRunning) return;
+            
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+            
+            if (bird.y - bird.radius <= -1 || bird.y + bird.radius >= canvas.height) {
+                gameOver();
+                return;
+            }
+            
+            pipes.forEach(pipe => {
+                pipe.x -= pipeSpeed;
+                
+                if (
+                    bird.x + bird.radius > pipe.x && 
+                    bird.x - bird.radius < pipe.x + pipeWidth && 
+                    (bird.y - bird.radius < pipe.topHeight || bird.y + bird.radius > pipe.topHeight + pipeGap)
+                ) {
+                    gameOver();
+                    return;
+                }
+                
+                if (!pipe.passed && bird.x > pipe.x + pipeWidth) {
+                    pipe.passed = true;
+                    score++;
+                    if (score >= pipes.length) {
+                        alert("YOU got this!")
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+        function gameOver() {
+            pipeSpeed = 0;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawPipes();
+            drawBird();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+        }
+
+        function jump() {
+            if (!pipeSpeed) {
+                gameRunning = false;
+                pipeSpeed = 3.2;
+                init();
+                return;
+            }
+            gameRunning = true;
+            if (gameRunning) {
+                bird.velocity = bird.jumpStrength;
+            }
+        }
+
+        canvas.addEventListener('click', jump);
+
+        init();
+        setInterval(gameLoop, 1000 / 60);
+    </script>
+</body>
+</html>
